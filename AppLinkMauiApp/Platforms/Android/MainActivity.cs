@@ -23,8 +23,27 @@ namespace AppLinkMauiApp;
     DataScheme = "https",
     DataHost = "mauiapp2024.web.app",
     AutoVerify = true)]
+
 public class MainActivity : MauiAppCompatActivity
 {
+    protected override void OnNewIntent(Intent intent)
+    {
+        base.OnNewIntent(intent);
 
+        // Handle the intent here
+        var action = intent.Action;
+        var data = intent.Data?.ToString();
+
+        if (action == Intent.ActionView && data != null)
+        {
+            Task.Run(() => HandleAppLink(data));
+        }
+    }
+
+    static void HandleAppLink(string url)
+    {
+        if (Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri))
+            App.Current?.SendOnAppLinkRequestReceived(uri);
+    }
 
 }

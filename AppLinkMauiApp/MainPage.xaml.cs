@@ -2,24 +2,40 @@
 {
     public partial class MainPage : ContentPage
     {
-        int count = 0;
-
         public MainPage()
         {
             InitializeComponent();
         }
 
-        private void OnCounterClicked(object sender, EventArgs e)
+        protected override void OnAppearing()
         {
-            count++;
+            base.OnAppearing();
 
-            if (count == 1)
-                CounterBtn.Text = $"Clicked {count} time";
-            else
-                CounterBtn.Text = $"Clicked {count} times";
+            // Use the dispatcher to ensure UI updates are on the main thread
+            if (App.Current is App app && app.GetHasDeepLinkData())
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    // Display the information
+                    DisplayVerificationInfo(app.GetReceivedUserId(), app.GetReceivedVerificationStatus());
 
-            SemanticScreenReader.Announce(CounterBtn.Text);
+                    // Clear the deep link data after handling it
+                    app.SetHasDeepLinkData(false);
+                });
+            }
+        }
+
+        public void DisplayVerificationInfo(string userId, bool isVerified)
+        {
+            // Assuming you have Labels named UserIdLabel and VerificationStatusLabel in your XAML
+            UserIdLabel.Text = $"User ID: {userId}";
+            VerificationStatusLabel.Text = isVerified ? "Account Verified" : "Account Not Verified";
         }
     }
+
+
+
+
+
 
 }

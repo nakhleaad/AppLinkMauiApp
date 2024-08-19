@@ -1,6 +1,5 @@
 ﻿using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Extensions.Logging;
-using AppLinkMauiApp;
 
 namespace AppLinkMauiApp;
 
