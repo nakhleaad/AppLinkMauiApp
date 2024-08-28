@@ -2,7 +2,7 @@
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
-using Microsoft.Maui.Dispatching;
+
 
 namespace AppLinkMauiApp;
 
@@ -23,27 +23,54 @@ namespace AppLinkMauiApp;
     DataScheme = "https",
     DataHost = "mauiapp2024.web.app",
     AutoVerify = true)]
-
 public class MainActivity : MauiAppCompatActivity
 {
+    protected override void OnCreate(Bundle savedInstanceState)
+    {
+        base.OnCreate(savedInstanceState);
+
+        // Handle the intent that started the activity, if applicable
+        if (Intent?.Action == Intent.ActionView && Intent.Data != null)
+        {
+            try
+            {
+                HandleAppLink(Intent.Data.ToString()); // Handle the incoming deep link
+            }
+            catch (Exception ex)
+            {
+                SentrySdk.CaptureException(ex); // Capture any exceptions that occur
+            }
+        }
+    }
+
     protected override void OnNewIntent(Intent intent)
     {
         base.OnNewIntent(intent);
 
-        // Handle the intent here
-        var action = intent.Action;
-        var data = intent.Data?.ToString();
-
-        if (action == Intent.ActionView && data != null)
+        // Handle the new intent that comes in after the activity is already running
+        if (intent.Action == Intent.ActionView && intent.Data != null)
         {
-            Task.Run(() => HandleAppLink(data));
+            try
+            {
+                HandleAppLink(intent.Data.ToString()); // Handle the new deep link
+            }
+            catch (Exception ex)
+            {
+                SentrySdk.CaptureException(ex); // Capture any exceptions that occur
+            }
         }
     }
 
     static void HandleAppLink(string url)
     {
-        if (Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri))
-            App.Current?.SendOnAppLinkRequestReceived(uri);
+        try
+        {
+            if (Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri))
+                App.Current?.SendOnAppLinkRequestReceived(uri); // Notify the app about the deep link
+        }
+        catch (Exception ex)
+        {
+            SentrySdk.CaptureException(ex); // Capture any exceptions that occur
+        }
     }
-
 }
